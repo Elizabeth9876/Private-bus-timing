@@ -18,8 +18,7 @@ A modern Flutter application for browsing and booking private buses in Kerala. U
 
 - **Flutter** (UI toolkit)
 - **Firebase** (Auth, Firestore)
-- **Provider** (State management)
-- **Hive** (Local storage)
+- **Provider** (State management) 
 - **Dart** (Programming language)
 
 ## 📂 Project Structure
