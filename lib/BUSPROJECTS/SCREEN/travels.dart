@@ -55,8 +55,8 @@ class _TravelHomePageState extends State<TravelHomePage> {
 
   final List<String> carouselImages = [
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdY2jrG70ZcN4ySQWTfz82Qcga7C7IBs1Ekw&s',
-    '',
-    '',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbLsJFlEc_qymDy5FCuNLl2U5Eyme9VHjXAQ&s',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST6HiLeLVQFqdyTiqNCJiYHHQSNdaKSK_j1A&s',
   ];
 
   final List<Map<String, dynamic>> busRoutes = [
