@@ -56,7 +56,6 @@ class _ProfilePageState extends State<ProfilePage> {
             // Profile Options
             _buildProfileOption(Icons.person_outline, 'Personal Information'),
             _buildProfileOption(Icons.history, 'Trip History'),
-            _buildProfileOption(Icons.credit_card, 'Payment Methods'),
             _buildProfileOption(Icons.notifications, 'Notification Settings'),
             _buildProfileOption(Icons.security, 'Privacy & Security'),
             _buildProfileOption(Icons.help_outline, 'Help & Support'),
