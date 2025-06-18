@@ -54,7 +54,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
   ];
 
   final List<String> carouselImages = [
-    '',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdY2jrG70ZcN4ySQWTfz82Qcga7C7IBs1Ekw&s',
     '',
     '',
   ];
