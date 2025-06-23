@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/busdetails.dart';
 
 void main() {
   runApp(const TravelApp());
@@ -41,6 +43,13 @@ class _TravelHomePageState extends State<TravelHomePage> {
   final PageController _pageController = PageController();
   final PageController _carouselController = PageController(viewportFraction: 0.9);
   int _currentCarouselIndex = 0;
+  Timer? _carouselTimer;
+
+  // Carousel configuration
+  final Duration _carouselInterval = const Duration(seconds: 3);
+  final Curve _carouselCurve = Curves.easeInOut;
+  final bool _autoPlay = true;
+  final bool _pauseAutoPlayOnManualScroll = true;
 
   final List<String> locations = [
     'Thevara',
@@ -53,10 +62,22 @@ class _TravelHomePageState extends State<TravelHomePage> {
     'Fort Kochi'
   ];
 
-  final List<String> carouselImages = [
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdY2jrG70ZcN4ySQWTfz82Qcga7C7IBs1Ekw&s',
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbLsJFlEc_qymDy5FCuNLl2U5Eyme9VHjXAQ&s',
-    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST6HiLeLVQFqdyTiqNCJiYHHQSNdaKSK_j1A&s',
+  final List<Map<String, dynamic>> carouselItems = [
+    {
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRAwUxu2250mVV1jaeWgfqUc0QXT4cst0ZOw&s',
+      'title': 'Comfortable Travel',
+      'subtitle': 'Enjoy your journey with our buses',
+    },
+    {
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbLsJFlEc_qymDy5FCuNLl2U5Eyme9VHjXAQ&s',
+      'title': 'Punctual Service',
+      'subtitle': 'We value your time with our timely schedules',
+    },
+    {
+      'image': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcST6HiLeLVQFqdyTiqNCJiYHHQSNdaKSK_j1A&s',
+      'title': 'Extensive Network',
+      'subtitle': 'Connecting all major locations in Kerala',
+    },
   ];
 
   final List<Map<String, dynamic>> busRoutes = [
@@ -118,18 +139,54 @@ class _TravelHomePageState extends State<TravelHomePage> {
   @override
   void initState() {
     super.initState();
-    _carouselController.addListener(() {
-      setState(() {
-        _currentCarouselIndex = _carouselController.page?.round() ?? 0;
-      });
-    });
+    _carouselController.addListener(_onCarouselPageChanged);
+    _startAutoPlay();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _carouselController.dispose();
+    _stopAutoPlay();
     super.dispose();
+  }
+
+  void _onCarouselPageChanged() {
+    setState(() {
+      _currentCarouselIndex = _carouselController.page?.round() ?? 0;
+    });
+  }
+
+  void _startAutoPlay() {
+    if (!_autoPlay) return;
+    
+    _carouselTimer = Timer.periodic(_carouselInterval, (timer) {
+      if (_carouselController.hasClients) {
+        final nextPage = (_currentCarouselIndex + 1) % carouselItems.length;
+        _carouselController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 500),
+          curve: _carouselCurve,
+        );
+      }
+    });
+  }
+
+  void _stopAutoPlay() {
+    _carouselTimer?.cancel();
+    _carouselTimer = null;
+  }
+
+  void _onCarouselManualScrollStart() {
+    if (_pauseAutoPlayOnManualScroll) {
+      _stopAutoPlay();
+    }
+  }
+
+  void _onCarouselManualScrollEnd() {
+    if (_pauseAutoPlayOnManualScroll) {
+      _startAutoPlay();
+    }
   }
 
   Future<void> _showLocationPicker(bool isFrom) async {
@@ -234,7 +291,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Continue'),
+                child: const Text('Close'),
               ),
             ],
           ),
@@ -382,7 +439,11 @@ class _TravelHomePageState extends State<TravelHomePage> {
               
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => BusDetailsScreen(),
+                  ));
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   minimumSize: const Size(double.infinity, 50),
@@ -391,7 +452,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
                   ),
                 ),
                 child: const Text(
-                  'Close',
+                  'Continue',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.white
@@ -441,44 +502,301 @@ class _TravelHomePageState extends State<TravelHomePage> {
     return Colors.grey;
   }
 
+  Widget _buildBusRouteCard({
+    required String routeName,
+    required String timing,
+    required String routeStops,
+    required String busImage,
+    required String frequency,
+    required VoidCallback onPressed,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    routeName,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      timing,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 12),
+              
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      busImage,
+                      width: 80,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          routeStops,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 16, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              frequency,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryPage() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.history, size: 64, color: Colors.blue[300]),
+          const SizedBox(height: 16),
+          Text(
+            'Your Travel History',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[800],
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No recent trips found',
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfilePage() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.blue[100],
+            child: const Icon(Icons.person, size: 50, color: Colors.blue),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'John Doe',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'john.doe@example.com',
+            style: TextStyle(color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          
+          // Profile Options
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                _buildProfileOption(Icons.person, 'Personal Information'),
+                _buildProfileOption(Icons.history, 'Trip History'),
+                _buildProfileOption(Icons.settings, 'Settings'),
+                _buildProfileOption(Icons.help, 'Help & Support'),
+                _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileOption(IconData icon, String title, {bool isLogout = false}) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
+      child: ListTile(
+        leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isLogout ? Colors.red : Colors.black87,
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {},
+      ),
+    );
+  }
+
   Widget _buildHomePage() {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Carousel Slider
+          // Enhanced Carousel Slider
           SizedBox(
-            height: 180,
-            child: PageView.builder(
-              controller: _carouselController,
-              itemCount: carouselImages.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      carouselImages[index],
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+            height: 220,
+            child: GestureDetector(
+              onPanDown: (_) => _onCarouselManualScrollStart(),
+              onPanEnd: (_) => _onCarouselManualScrollEnd(),
+              child: PageView.builder(
+                controller: _carouselController,
+                itemCount: carouselItems.length,
+                itemBuilder: (context, index) {
+                  final item = carouselItems[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                    child: Stack(
+                      children: [
+                        // Image with gradient overlay
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: ShaderMask(
+                            shaderCallback: (rect) {
+                              return LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                              ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
+                            },
+                            blendMode: BlendMode.darken,
+                            child: Image.network(
+                              item['image'],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image, size: 50),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        // Text content
+                        Positioned(
+                          left: 20,
+                          right: 20,
+                          bottom: 20,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['title'],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                item['subtitle'],
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           
-          // Carousel Indicator
+          // Enhanced Carousel Indicator
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(carouselImages.length, (index) {
-              return Container(
-                width: 8,
+            children: List.generate(carouselItems.length, (index) {
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: _currentCarouselIndex == index ? 24 : 8,
                 height: 8,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentCarouselIndex == index ? Colors.blue : Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                  color: _currentCarouselIndex == index 
+                      ? Colors.blue 
+                      : Colors.grey[300],
                 ),
               );
             }),
@@ -594,195 +912,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
           
           const SizedBox(height: 30),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHistoryPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.history, size: 64, color: Colors.blue[300]),
-          const SizedBox(height: 16),
-          Text(
-            'Your Travel History',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[800],
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'No recent trips found',
-            style: TextStyle(color: Colors.grey),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfilePage() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.blue[100],
-            child: const Icon(Icons.person, size: 50, color: Colors.blue),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'John Doe',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'john.doe@example.com',
-            style: TextStyle(color: Colors.grey),
-          ),
-          const SizedBox(height: 24),
-          
-          // Profile Options
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                _buildProfileOption(Icons.person, 'Personal Information'),
-                _buildProfileOption(Icons.history, 'Trip History'),
-                _buildProfileOption(Icons.settings, 'Settings'),
-                _buildProfileOption(Icons.help, 'Help & Support'),
-                _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileOption(IconData icon, String title, {bool isLogout = false}) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      child: ListTile(
-        leading: Icon(icon, color: isLogout ? Colors.red : Colors.blue),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isLogout ? Colors.red : Colors.black87,
-          ),
-        ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
-      ),
-    );
-  }
-
-  Widget _buildBusRouteCard({
-    required String routeName,
-    required String timing,
-    required String routeStops,
-    required String busImage,
-    required String frequency,
-    required VoidCallback onPressed,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onPressed,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    routeName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      timing,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 12),
-              
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      busImage,
-                      width: 80,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          routeStops,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.schedule, size: 16, color: Colors.grey),
-                            const SizedBox(width: 4),
-                            Text(
-                              frequency,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
