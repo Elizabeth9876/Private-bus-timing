@@ -42,7 +42,7 @@ class BusDetailsScreen extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.network(
-                'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRAwUxu2250mVV1jaeWgfqUc0QXT4cst0ZOw&s',
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
