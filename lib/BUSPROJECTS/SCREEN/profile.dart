@@ -54,12 +54,10 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 30),
             
             // Profile Options
-            _buildProfileOption(Icons.person_outline, 'Personal Information'),
-            _buildProfileOption(Icons.history, 'Trip History'),
-            _buildProfileOption(Icons.notifications, 'Notification Settings'),
-            _buildProfileOption(Icons.security, 'Privacy & Security'),
-            _buildProfileOption(Icons.help_outline, 'Help & Support'),
-            _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
+            _buildProfileOption(Icons.person, 'Personal Information'),
+                _buildProfileOption(Icons.settings, 'Settings'),
+                _buildProfileOption(Icons.help, 'Help & Support'),
+                _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
           ],
         ),
       ),

@@ -661,7 +661,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
             child: Column(
               children: [
                 _buildProfileOption(Icons.person, 'Personal Information'),
-                _buildProfileOption(Icons.history, 'Trip History'),
                 _buildProfileOption(Icons.settings, 'Settings'),
                 _buildProfileOption(Icons.help, 'Help & Support'),
                 _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
