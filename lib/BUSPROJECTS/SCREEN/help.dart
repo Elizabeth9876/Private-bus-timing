@@ -1,120 +1,82 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: HelpSupportScreen(),
-  ));
-}
-
-class HelpSupportScreen extends StatelessWidget {
-  const HelpSupportScreen({super.key});
+class HelpSupportPage extends StatelessWidget {
+  const HelpSupportPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController messageController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Help & Support'),
-        backgroundColor: Colors.blue,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: ListView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'How can we help you?',
+              'Need Help?',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-
-            ListTile(
-              leading: const Icon(Icons.help_outline),
-              title: const Text('FAQs'),
-              subtitle: const Text('Frequently asked questions'),
-              onTap: () {
-                // Navigate to FAQ screen or show a dialog
-              },
+            _buildHelpOption(
+              'FAQs',
+              'Find answers to common questions',
+              Icons.help_outline,
             ),
-            const Divider(),
-
-            ListTile(
-              leading: const Icon(Icons.email_outlined),
-              title: const Text('Email Support'),
-              subtitle: const Text('support@example.com'),
-              onTap: () {
-                // You can use url_launcher to open email
-              },
+            _buildHelpOption(
+              'Contact Us',
+              'Reach out to our support team',
+              Icons.contact_support,
             ),
-            const Divider(),
-
-            ListTile(
-              leading: const Icon(Icons.phone),
-              title: const Text('Call Us'),
-              subtitle: const Text('+91 9876543210'),
-              onTap: () {
-                // You can use url_launcher to call
-              },
+            _buildHelpOption(
+              'Feedback',
+              'Share your experience with us',
+              Icons.feedback,
             ),
-            const Divider(),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             const Text(
-              'Send us a message',
+              'Send us a Message',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-
-            const MessageForm(),
+            TextField(
+              controller: messageController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Type your message here...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (messageController.text.trim().isNotEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Message sent successfully!')),
+                  );
+                  messageController.clear();
+                }
+              },
+              child: const Text('Send Message'),
+            ),
           ],
         ),
       ),
     );
   }
-}
 
-class MessageForm extends StatefulWidget {
-  const MessageForm({super.key});
-
-  @override
-  State<MessageForm> createState() => _MessageFormState();
-}
-
-class _MessageFormState extends State<MessageForm> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _messageController = TextEditingController();
-
-  void _submitMessage() {
-    if (_formKey.currentState!.validate()) {
-      String message = _messageController.text.trim();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Message sent: $message')),
-      );
-      _messageController.clear();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _messageController,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              hintText: 'Type your message here...',
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) =>
-                value == null || value.isEmpty ? 'Please enter a message' : null,
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: _submitMessage,
-            child: const Text('Send'),
-          ),
-        ],
+  Widget _buildHelpOption(String title, String subtitle, IconData icon) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {},
       ),
     );
   }
