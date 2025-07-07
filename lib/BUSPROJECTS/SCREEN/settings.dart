@@ -19,7 +19,6 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 20),
           _buildSettingOption('Notifications', Icons.notifications, true),
           _buildSettingOption('Dark Mode', Icons.dark_mode, false),
-          _buildSettingOption('Language', Icons.language, false),
           _buildSettingOption('Privacy Settings', Icons.privacy_tip, false),
           const SizedBox(height: 30),
           const Text(
