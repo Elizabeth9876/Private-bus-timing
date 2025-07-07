@@ -25,6 +25,11 @@ class TravelApp extends StatelessWidget {
         ),
       ),
       home: const TravelHomePage(),
+      routes: {
+        '/personal': (context) => const PersonalInfoPage(),
+        '/settings': (context) => const SettingsPage(),
+        '/help': (context) => const HelpSupportPage(),
+      },
     );
   }
 }
@@ -190,26 +195,91 @@ class _TravelHomePageState extends State<TravelHomePage> {
   }
 
   Future<void> _showLocationPicker(bool isFrom) async {
+    // Maintain a filtered list based on search query
+    List<String> filteredLocations = List.from(locations);
+    TextEditingController searchController = TextEditingController();
+
     final selected = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Select ${isFrom ? 'From' : 'To'} Location'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: locations.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  title: Text(locations[index]),
-                  onTap: () {
-                    Navigator.pop(context, locations[index]);
-                  },
-                );
-              },
-            ),
-          ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Select ${isFrom ? 'From' : 'To'} Location'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Search Bar
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search locations...',
+                          border: InputBorder.none,
+                          prefixIcon: const Icon(Icons.search, color: Colors.blue),
+                          suffixIcon: searchController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    searchController.clear();
+                                    setState(() {
+                                      filteredLocations = List.from(locations);
+                                    });
+                                  },
+                                )
+                              : null,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            filteredLocations = locations
+                                .where((location) => location
+                                    .toLowerCase()
+                                    .contains(value.toLowerCase()))
+                                .toList();
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Location List
+                    Expanded(
+                      child: filteredLocations.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No locations found',
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filteredLocations.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                  child: ListTile(
+                                    leading: const Icon(Icons.location_on, color: Colors.blue),
+                                    title: Text(filteredLocations[index]),
+                                    onTap: () {
+                                      Navigator.pop(context, filteredLocations[index]);
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -660,10 +730,21 @@ class _TravelHomePageState extends State<TravelHomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                _buildProfileOption(Icons.person, 'Personal Information'),
-                _buildProfileOption(Icons.settings, 'Settings'),
-                _buildProfileOption(Icons.help, 'Help & Support'),
-                _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
+                ElevatedButton(onPressed: (){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const 
+                  PersonalInfoPage()));
+                }, child: Text('personal info')),
+                SizedBox(height: 35),
+
+                ElevatedButton(onPressed: (){
+                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingsPage()));
+                }, child: Text(
+                'settings')),
+                SizedBox(height: 35,),
+                ElevatedButton(onPressed: (){
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const HelpSupportPage()));
+                }, child: Text('help & support')),
+                
               ],
             ),
           ),
@@ -672,7 +753,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title, {bool isLogout = false}) {
+  Widget _buildProfileOption(IconData icon, String title, {String? route, bool isLogout = false}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
@@ -685,8 +766,46 @@ class _TravelHomePageState extends State<TravelHomePage> {
           ),
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: () {},
+        onTap: () {
+          if (isLogout) {
+            _showLogoutConfirmation(context);
+          } else if (route != null) {
+            Navigator.pushNamed(context, route);
+          }
+        },
       ),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Logged out successfully')),
+                );
+                // Here you would typically navigate to login screen
+                // Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -966,6 +1085,199 @@ class _TravelHomePageState extends State<TravelHomePage> {
             label: 'Profile',
           ),
         ],
+      ),
+    );
+  }
+}
+
+class PersonalInfoPage extends StatelessWidget {
+  const PersonalInfoPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Personal Information'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Account Details',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            _buildInfoCard('Full Name', 'John Doe'),
+            _buildInfoCard('Email', 'john.doe@example.com'),
+  
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          const Text(
+            'App Settings',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          _buildSettingOption('Notifications', Icons.notifications, true),
+          _buildSettingOption('Dark Mode', Icons.dark_mode, false),
+          _buildSettingOption('Language', Icons.language, false),
+          _buildSettingOption('Privacy Settings', Icons.privacy_tip, false),
+          const SizedBox(height: 30),
+          const Text(
+            'Account Settings',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          _buildSettingOption('Change Password', Icons.lock, false),
+          _buildSettingOption('Delete Account', Icons.delete, false),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingOption(String title, IconData icon, bool isSwitch) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(title),
+        trailing: isSwitch
+            ? Switch(
+                value: true,
+                onChanged: (value) {},
+                activeColor: Colors.blue,
+              )
+            : const Icon(Icons.chevron_right),
+        onTap: () {},
+      ),
+    );
+  }
+}
+
+class HelpSupportPage extends StatelessWidget {
+  const HelpSupportPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final TextEditingController messageController = TextEditingController();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Help & Support'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Need Help?',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            _buildHelpOption(
+              'FAQs',
+              'Find answers to common questions',
+              Icons.help_outline,
+            ),
+            _buildHelpOption(
+              'Contact Us',
+              'Reach out to our support team',
+              Icons.contact_support,
+            ),
+            _buildHelpOption(
+              'Feedback',
+              'Share your experience with us',
+              Icons.feedback,
+            ),
+            const SizedBox(height: 30),
+            const Text(
+              'Send us a Message',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: messageController,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                hintText: 'Type your message here...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                if (messageController.text.trim().isNotEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Message sent successfully!')),
+                  );
+                  messageController.clear();
+                }
+              },
+              child: const Text('Send Message'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHelpOption(String title, String subtitle, IconData icon) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(title),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {},
       ),
     );
   }
