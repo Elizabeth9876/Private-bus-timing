@@ -730,28 +730,10 @@ class _TravelHomePageState extends State<TravelHomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                ElevatedButton(onPressed: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const 
-                  PersonalInfoPage()));
-                }, child: TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    labelText: 'personal information',
-                  ),
-                )),
-                SizedBox(height: 35),
-
-                ElevatedButton(onPressed: (){
-                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const SettingsPage()));
-                }, child: Text(
-                'settings')),
-                SizedBox(height: 35,),
-                ElevatedButton(onPressed: (){
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const HelpSupportPage()));
-                }, child: Text('help & support')),
-                
+                _buildProfileOption(Icons.person, 'Personal Information', route: '/personal'),
+                _buildProfileOption(Icons.settings, 'Settings', route: '/settings'),
+                _buildProfileOption(Icons.help, 'Help & Support', route: '/help'),
+                _buildProfileOption(Icons.logout, 'Logout', isLogout: true),
               ],
             ),
           ),
@@ -1097,59 +1079,116 @@ class _TravelHomePageState extends State<TravelHomePage> {
   }
 }
 
-class PersonalInfoPage extends StatelessWidget {
+class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key});
+
+  @override
+  State<PersonalInfoPage> createState() => _PersonalInfoPageState();
+}
+
+class _PersonalInfoPageState extends State<PersonalInfoPage> {
+  // Controllers for text fields
+  final TextEditingController _nameController = TextEditingController(text: "John Doe");
+  final TextEditingController _emailController = TextEditingController(text: "john.doe@example.com");
+
+  // Form key for validation
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    // Clean up controllers
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _saveProfile() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile updated successfully')),
+      );
+      // In real app, add logic to save data to backend/database
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Personal Information'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: _saveProfile,
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Account Details',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            _buildInfoCard('Full Name', 'John Doe'),
-            _buildInfoCard('Email', 'john.doe@example.com'),
-  
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile Picture
+              Center(
+                child: Stack(
+                  children: [
+                    const CircleAvatar(
+                      radius: 50,
+                      backgroundImage: NetworkImage(
+                        'https://randomuser.me/api/portraits/men/1.jpg',
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // Editable Fields
+              _buildEditableField('Full Name', _nameController),
+              _buildEditableField('Email', _emailController),
+    
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoCard(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+  Widget _buildEditableField(String label, TextEditingController controller, {int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+          suffixIcon: const Icon(Icons.edit, size: 20),
         ),
+        maxLines: maxLines,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter $label';
+          }
+          return null;
+        },
       ),
     );
   }
@@ -1174,7 +1213,6 @@ class SettingsPage extends StatelessWidget {
           const SizedBox(height: 20),
           _buildSettingOption('Notifications', Icons.notifications, true),
           _buildSettingOption('Dark Mode', Icons.dark_mode, false),
-          _buildSettingOption('Language', Icons.language, false),
           _buildSettingOption('Privacy Settings', Icons.privacy_tip, false),
           const SizedBox(height: 30),
           const Text(
