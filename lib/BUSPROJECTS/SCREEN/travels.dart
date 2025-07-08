@@ -733,7 +733,14 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 ElevatedButton(onPressed: (){
                   Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const 
                   PersonalInfoPage()));
-                }, child: Text('personal info')),
+                }, child: TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    labelText: 'personal information',
+                  ),
+                )),
                 SizedBox(height: 35),
 
                 ElevatedButton(onPressed: (){
