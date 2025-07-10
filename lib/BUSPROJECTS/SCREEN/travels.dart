@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 void main() {
   runApp(const TravelApp());
@@ -762,7 +761,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
             itemBuilder: (context, index) {
               final historyItem = _searchHistory[index];
               final time = historyItem['time'] as DateTime;
-              final formattedTime = DateFormat('MMM dd, hh:mm a').format(time);
+            
               
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -772,7 +771,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
                     '${historyItem['from']} to ${historyItem['to']}',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(formattedTime),
+                
                   trailing: IconButton(
                     icon: const Icon(Icons.directions_bus, color: Colors.green),
                     onPressed: () {
