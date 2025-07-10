@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/busdetails.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const TravelApp());
@@ -49,6 +49,9 @@ class _TravelHomePageState extends State<TravelHomePage> {
   final PageController _carouselController = PageController(viewportFraction: 0.9);
   int _currentCarouselIndex = 0;
   Timer? _carouselTimer;
+
+  // Search history storage
+  final List<Map<String, dynamic>> _searchHistory = [];
 
   // Carousel configuration
   final Duration _carouselInterval = const Duration(seconds: 3);
@@ -194,8 +197,34 @@ class _TravelHomePageState extends State<TravelHomePage> {
     }
   }
 
+  // Add to search history
+  void _addToSearchHistory() {
+    setState(() {
+      // Check if this search already exists in history
+      final existingIndex = _searchHistory.indexWhere(
+        (item) => item['from'] == fromLocation && item['to'] == toLocation
+      );
+      
+      // Remove existing entry if found
+      if (existingIndex != -1) {
+        _searchHistory.removeAt(existingIndex);
+      }
+      
+      // Add new entry at the top
+      _searchHistory.insert(0, {
+        'from': fromLocation,
+        'to': toLocation,
+        'time': DateTime.now(),
+      });
+      
+      // Limit history to 10 items
+      if (_searchHistory.length > 10) {
+        _searchHistory.removeLast();
+      }
+    });
+  }
+
   Future<void> _showLocationPicker(bool isFrom) async {
-    // Maintain a filtered list based on search query
     List<String> filteredLocations = List.from(locations);
     TextEditingController searchController = TextEditingController();
 
@@ -211,7 +240,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Search Bar
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
@@ -249,7 +277,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                     ),
                     const SizedBox(height: 12),
                     
-                    // Location List
                     Expanded(
                       child: filteredLocations.isEmpty
                           ? const Center(
@@ -305,6 +332,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
     });
 
     if (filteredBuses.isNotEmpty) {
+      _addToSearchHistory();
       _showFilteredBusesDialog();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -510,9 +538,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => BusDetailsScreen(),
-                  ));
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
@@ -676,27 +702,108 @@ class _TravelHomePageState extends State<TravelHomePage> {
   }
 
   Widget _buildHistoryPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.history, size: 64, color: Colors.blue[300]),
-          const SizedBox(height: 16),
-          Text(
-            'Your Travel History',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[800],
+    if (_searchHistory.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.history, size: 64, color: Colors.blue[300]),
+            const SizedBox(height: 16),
+            Text(
+              'Your Travel History',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[800],
+              ),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'No recent searches found',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recent Searches',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[800],
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _searchHistory.clear();
+                  });
+                },
+                child: const Text(
+                  'Clear All',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'No recent trips found',
-            style: TextStyle(color: Colors.grey),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _searchHistory.length,
+            itemBuilder: (context, index) {
+              final historyItem = _searchHistory[index];
+              final time = historyItem['time'] as DateTime;
+              final formattedTime = DateFormat('MMM dd, hh:mm a').format(time);
+              
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: ListTile(
+                  leading: const Icon(Icons.history, color: Colors.blue),
+                  title: Text(
+                    '${historyItem['from']} to ${historyItem['to']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(formattedTime),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.directions_bus, color: Colors.green),
+                    onPressed: () {
+                      setState(() {
+                        fromLocation = historyItem['from'];
+                        toLocation = historyItem['to'];
+                        _currentIndex = 0;
+                      });
+                      _pageController.jumpToPage(0);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _filterBuses();
+                      });
+                    },
+                  ),
+                  onTap: () {
+                    setState(() {
+                      fromLocation = historyItem['from'];
+                      toLocation = historyItem['to'];
+                      _currentIndex = 0;
+                    });
+                    _pageController.jumpToPage(0);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _filterBuses();
+                    });
+                  },
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -725,7 +832,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
           ),
           const SizedBox(height: 24),
           
-          // Profile Options
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
@@ -784,8 +890,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Logged out successfully')),
                 );
-                // Here you would typically navigate to login screen
-                // Navigator.pushReplacementNamed(context, '/login');
               },
               child: const Text(
                 'Logout',
@@ -803,7 +907,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Enhanced Carousel Slider
           SizedBox(
             height: 220,
             child: GestureDetector(
@@ -818,7 +921,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                     child: Stack(
                       children: [
-                        // Image with gradient overlay
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: ShaderMask(
@@ -854,7 +956,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                             ),
                           ),
                         ),
-                        // Text content
                         Positioned(
                           left: 20,
                           right: 20,
@@ -889,7 +990,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
             ),
           ),
           
-          // Enhanced Carousel Indicator
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -911,7 +1011,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
           
           const SizedBox(height: 16),
           
-          // Search Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Card(
@@ -923,7 +1022,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // From Location
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
@@ -939,7 +1037,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                     
                     const SizedBox(height: 12),
                     
-                    // To Location
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.blue[50],
@@ -955,7 +1052,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
                     
                     const SizedBox(height: 16),
                     
-                    // Find Buses Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -985,7 +1081,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
           
           const SizedBox(height: 24),
           
-          // Popular Routes Section
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: Text(
@@ -1000,7 +1095,6 @@ class _TravelHomePageState extends State<TravelHomePage> {
           
           const SizedBox(height: 12),
           
-          // Bus Routes List
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
@@ -1087,16 +1181,12 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  // Controllers for text fields
   final TextEditingController _nameController = TextEditingController(text: "John Doe");
   final TextEditingController _emailController = TextEditingController(text: "john.doe@example.com");
-
-  // Form key for validation
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
-    // Clean up controllers
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();
@@ -1107,7 +1197,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
       );
-      // In real app, add logic to save data to backend/database
     }
   }
 
@@ -1130,7 +1219,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Picture
               Center(
                 child: Stack(
                   children: [
@@ -1157,7 +1245,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               ),
               const SizedBox(height: 24),
               
-              // Editable Fields
               _buildEditableField('Full Name', _nameController),
               _buildEditableField('Email', _emailController),
     
