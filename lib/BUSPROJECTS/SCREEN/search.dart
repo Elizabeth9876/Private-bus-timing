@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/BUSPROJECTS/MODEL/class.dart';
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/historypage.dart';
 import 'package:provider/provider.dart';
-import 'search_history_provider.dart';
-import 'history_page.dart';
 
 class SearchPage extends StatelessWidget {
   SearchPage({super.key});
@@ -43,7 +43,7 @@ class SearchPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const HistoryPage()),
+                  MaterialPageRoute(builder: (_) => const HistoryPage ()),
                 );
               },
             ),
