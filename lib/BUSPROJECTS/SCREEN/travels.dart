@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/busdetails.dart';
 
 void main() {
   runApp(const TravelApp());
@@ -388,7 +389,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
+                child: const Text(''),
               ),
             ],
           ),
@@ -537,7 +538,7 @@ class _TravelHomePageState extends State<TravelHomePage> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context)=>const BusDetailsScreen()));
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
