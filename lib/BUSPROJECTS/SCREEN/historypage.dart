@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/BUSPROJECTS/MODEL/class.dart';
 import 'package:provider/provider.dart';
 
 class HistoryPage extends StatelessWidget {

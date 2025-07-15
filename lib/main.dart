@@ -4,6 +4,7 @@ import 'package:flutter_application_1/BUSPROJECTS/SCREEN/loginpage.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart';
 import 'package:flutter_application_1/firebase_options.dart';
 void main() async{
+   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   
   runApp(MaterialApp(
