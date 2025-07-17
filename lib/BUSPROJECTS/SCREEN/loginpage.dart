@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> signInUser() async {
+  Future<void> loginUserwithEmailAndPassword() async {
     try {
       final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                await signInUser();
+                                await loginUserwithEmailAndPassword();
                               }
                             },
                             child: const Text(
