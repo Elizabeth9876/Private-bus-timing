@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/travels.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/profile.dart'; // or TravelApp
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart'; // assumed as home page
+// make sure this exists
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MaterialApp(
     home: LoginScreen(),
     debugShowCheckedModeBanner: false,
@@ -26,6 +32,24 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> signInUser() async {
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+      print("User signed in: ${userCredential.user?.email}");
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => TravelApp()),
+      );
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.message ?? 'Login failed')),
+      );
+    }
   }
 
   @override
@@ -123,7 +147,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                             GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                // Add forgot password navigation
+                              },
                               child: const Text(
                                 "Forgot password?",
                                 style: TextStyle(
@@ -146,11 +172,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => TravelApp()),
-                                );
+                                await signInUser();
                               }
                             },
                             child: const Text(
@@ -162,7 +186,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 24),
                         const Text("Or sign in with"),
-                        const SizedBox(height: 12),
                         const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
