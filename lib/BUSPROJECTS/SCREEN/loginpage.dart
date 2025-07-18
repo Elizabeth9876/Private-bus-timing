@@ -173,8 +173,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             onPressed: () async {
+                               await loginUserwithEmailAndPassword();
                               if (_formKey.currentState!.validate()) {
-                                await loginUserwithEmailAndPassword();
+                                
                               }
                             },
                             child: const Text(

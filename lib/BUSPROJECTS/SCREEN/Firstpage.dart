@@ -1,7 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/loginpage.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart';
-void main() => runApp(const BusApp());
+import 'package:flutter_application_1/firebase_options.dart';
+void main() async{
+   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: const BusApp(),
+  ));
+}
 
 class BusApp extends StatelessWidget {
   const BusApp({super.key});
