@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/travels.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -28,7 +27,7 @@ class BusDetailsScreen extends StatelessWidget {
         backgroundColor: Colors.blue,
          actions: [
           ElevatedButton(onPressed: (){
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>TravelHomePage()));
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BusDetailsScreen()));
           }, 
           child: Text('Back'))
          ],

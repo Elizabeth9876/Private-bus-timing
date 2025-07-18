@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/profile.dart'; // or TravelApp
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/bottomcode.dart';
+ // or TravelApp
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart'; // assumed as home page
 // make sure this exists
 
@@ -43,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       print("User signed in: ${userCredential.user?.email}");
 
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => TravelApp()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -173,8 +174,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             onPressed: () async {
+                               await loginUserwithEmailAndPassword();
                               if (_formKey.currentState!.validate()) {
-                                await loginUserwithEmailAndPassword();
+                                
                               }
                             },
                             child: const Text(

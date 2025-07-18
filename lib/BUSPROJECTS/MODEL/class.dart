@@ -1,19 +1,11 @@
-import 'package:flutter/material.dart';
+class BusSearch {
+  final String from;
+  final String to;
 
-class SearchHistoryProvider with ChangeNotifier {
-  final List<String> _history = [];
+  BusSearch({required this.from, required this.to});
 
-  List<String> get history => _history.reversed.toList();
+  Map<String, String> toMap() => {'from': from, 'to': to};
 
-  void addSearch(String searchTerm) {
-    if (!_history.contains(searchTerm)) {
-      _history.add(searchTerm);
-      notifyListeners();
-    }
-  }
-
-  void clearHistory() {
-    _history.clear();
-    notifyListeners();
-  }
+  static BusSearch fromMap(Map<String, String> map) =>
+      BusSearch(from: map['from']!, to: map['to']!);
 }

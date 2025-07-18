@@ -1,26 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/BUSPROJECTS/MODEL/class.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/search.dart';
-import 'package:provider/provider.dart';
 
 
-void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (_) => SearchHistoryProvider(),
-      child: const MyApp(),
-    ),
-  );
-}
+class BusDetailsProvider with ChangeNotifier {
+  final List<BusSearch> _searchHistory = [];
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  List<BusSearch> get searchHistory => List.unmodifiable(_searchHistory);
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SearchPage(),
-    );
+  void addSearch(BusSearch search) {
+    if (!_searchHistory.any((s) => s.from == search.from && s.to == search.to)) {
+      _searchHistory.insert(0, search);
+      notifyListeners();
+    }
+  }
+
+  void clearHistory() {
+    _searchHistory.clear();
+    notifyListeners();
+  }
+
+  void loadSearch(BusSearch search) {
+    debugPrint('Loading bus search: ${search.from} to ${search.to}');
+    // Add navigation or action logic here
   }
 }

@@ -18,8 +18,7 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
   
-          _buildSettingOption('Dark Mode', Icons.dark_mode, false),
-          _buildSettingOption('Privacy Settings', Icons.privacy_tip, false),
+            _buildSettingOption('Privacy Settings', Icons.privacy_tip, false),
           const SizedBox(height: 30),
           const Text(
             'Account Settings',
@@ -27,7 +26,6 @@ class SettingsPage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           _buildSettingOption('Change Password', Icons.lock, false),
-          navigation
           _buildSettingOption('Delete Account', Icons.delete, false),
         ],
       ),
