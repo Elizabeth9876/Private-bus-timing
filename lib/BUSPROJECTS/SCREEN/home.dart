@@ -253,12 +253,8 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body:  Center(
-        child: ElevatedButton(onPressed: (){
-          Navigator.of(context).push(MaterialPageRoute(builder:(context) => HistoryPage(),));
-        }, child: Text('history'))
-        
-    
+      body: const Center(
+        child: Text('Profile Page Content', style: TextStyle(fontSize: 24)),
       ),
     );
   }

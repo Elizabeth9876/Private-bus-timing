@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/bottomcode.dart';
- // or TravelApp
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart'; // assumed as home page
-// make sure this exists
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart';
+// Ensure your REGISTER screen is correctly imported
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool rememberMe = false;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -36,20 +36,24 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> loginUserwithEmailAndPassword() async {
+    setState(() => isLoading = true);
     try {
       final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      print("User signed in: ${userCredential.user?.email}");
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
+      if (userCredential.user != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const BottomCode()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.message ?? 'Login failed')),
       );
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -58,15 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
           Positioned.fill(
             child: Image.network(
               'https://images.unsplash.com/photo-1602333761880-bab5fdd14a1c?auto=format&fit=crop&w=1170&q=80',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Gradient overlay
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
@@ -85,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -125,11 +125,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-
                         _buildTextField("Email", Icons.email, controller: emailController, isEmail: true),
                         const SizedBox(height: 16),
                         _buildTextField("Password", Icons.lock, controller: passwordController, isObscure: true),
-
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                // Add forgot password navigation
+                                // Add forgot password logic
                               },
                               child: const Text(
                                 "Forgot password?",
@@ -161,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
@@ -174,18 +171,18 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             onPressed: () async {
-                               await loginUserwithEmailAndPassword();
                               if (_formKey.currentState!.validate()) {
-                                
+                                await loginUserwithEmailAndPassword();
                               }
                             },
-                            child: const Text(
-                              "Sign in",
-                              style: TextStyle(fontSize: 16),
-                            ),
+                            child: isLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
+                                    "Sign in",
+                                    style: TextStyle(fontSize: 16),
+                                  ),
                           ),
                         ),
-
                         const SizedBox(height: 24),
                         const Text("Or sign in with"),
                         const SizedBox(height: 24),
@@ -196,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) => REGISTER()),
+                                  MaterialPageRoute(builder: (context) => const REGISTER()),
                                 );
                               },
                               child: const Text(

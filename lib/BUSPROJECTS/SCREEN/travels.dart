@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/BUSPROJECTS/SCREEN/bottomcode.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/historypage.dart';
 // Ensure provider is created here
 
@@ -14,7 +13,7 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _tabs = const [
-    HomeScreen(),
+    
     HistoryTab(),
   ];
 
