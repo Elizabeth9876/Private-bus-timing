@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+// Import your app's screens
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/bottomcode.dart';
 import 'package:flutter_application_1/BUSPROJECTS/SCREEN/secondpage.dart';
-// Ensure your REGISTER screen is correctly imported
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: LoginScreen(),
+    home: const LoginScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }
@@ -35,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> loginUserwithEmailAndPassword() async {
+  Future<void> loginUserWithEmailAndPassword() async {
     setState(() => isLoading = true);
     try {
       final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -45,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (userCredential.user != null) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const BottomCode()),
+          MaterialPageRoute(builder: (context) => const BottomCode()), // 👈 Navigates to Bottom Navigation Page
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -62,12 +64,14 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
+          // Background image
           Positioned.fill(
             child: Image.network(
               'https://images.unsplash.com/photo-1602333761880-bab5fdd14a1c?auto=format&fit=crop&w=1170&q=80',
               fit: BoxFit.cover,
             ),
           ),
+          // Gradient overlay
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
@@ -78,7 +82,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  stops: [0.3, 0.9],
                 ),
               ),
               foregroundDecoration: BoxDecoration(
@@ -86,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+          // Login Form UI
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -125,9 +129,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        _buildTextField("Email", Icons.email, controller: emailController, isEmail: true),
+
+                        _buildTextField("Email", Icons.email,
+                            controller: emailController, isEmail: true),
                         const SizedBox(height: 16),
-                        _buildTextField("Password", Icons.lock, controller: passwordController, isObscure: true),
+                        _buildTextField("Password", Icons.lock,
+                            controller: passwordController, isObscure: true),
+
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -147,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                // Add forgot password logic
+                                // TODO: Add forgot password logic
                               },
                               child: const Text(
                                 "Forgot password?",
@@ -160,6 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
+
+                        // Login Button
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -172,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                await loginUserwithEmailAndPassword();
+                                await loginUserWithEmailAndPassword();
                               }
                             },
                             child: isLoading
@@ -183,9 +193,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                           ),
                         ),
+
                         const SizedBox(height: 24),
                         const Text("Or sign in with"),
                         const SizedBox(height: 24),
+
+                        // Signup redirect
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -218,8 +231,14 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildTextField(String hint, IconData icon,
-      {required TextEditingController controller, bool isObscure = false, bool isEmail = false}) {
+  // Reusable Text Field Builder
+  Widget _buildTextField(
+    String hint,
+    IconData icon, {
+    required TextEditingController controller,
+    bool isObscure = false,
+    bool isEmail = false,
+  }) {
     return TextFormField(
       controller: controller,
       obscureText: isObscure,

@@ -1,17 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_application_1/BUSPROJECTS/SCREEN/historypage.dart'; // Make sure this file exists
 
 void main() {
   runApp(MaterialApp(
     home: BottomCode(),
     debugShowCheckedModeBanner: false,
-    routes: {
-      '/home': (_) => HomePage(),
-      '/history': (_) => HistoryPage(),
-      '/profile': (_) => ProfilePage(),
-    },
+    theme: ThemeData(
+      primarySwatch: Colors.blue,
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        elevation: 10,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFFF5F8FF),
+        labelStyle: TextStyle(color: Colors.blue),
+        border: OutlineInputBorder(),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue),
+        ),
+      ),
+    ),
   ));
 }
+
+// ---------------- BOTTOM NAVIGATION CONTROLLER ---------------- //
 
 class BottomCode extends StatefulWidget {
   const BottomCode({super.key});
@@ -23,29 +51,19 @@ class BottomCode extends StatefulWidget {
 class _BottomCodeState extends State<BottomCode> {
   int currentIndex = 0;
 
-  void _onTabTapped(int index) {
-    setState(() => currentIndex = index);
-
-    switch (index) {
-      case 0:
-        Navigator.pushNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/history');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/profile');
-        break;
-    }
-  }
+  final List<Widget> _pages = const [
+    HomePage(),
+    HistoryTab(),
+    ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const HomePage(),
+      body: _pages[currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: _onTabTapped,
+        onTap: (index) => setState(() => currentIndex = index),
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
@@ -90,12 +108,12 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('Searching buses'),
+        title: const Text('Searching buses'),
         content: Text('From: $selectedFrom\nTo: $selectedTo'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+            child: const Text('OK'),
           )
         ],
       ),
@@ -105,7 +123,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Home')),
+      appBar: AppBar(title: const Text('Home')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -119,10 +137,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedFrom,
-                    decoration: const InputDecoration(
-                      labelText: "From",
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(labelText: "From"),
                     items: fromLocations
                         .map((location) => DropdownMenuItem(
                               value: location,
@@ -137,10 +152,7 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: selectedTo,
-                    decoration: const InputDecoration(
-                      labelText: "To",
-                      border: OutlineInputBorder(),
-                    ),
+                    decoration: const InputDecoration(labelText: "To"),
                     items: toLocations
                         .map((location) => DropdownMenuItem(
                               value: location,
@@ -211,11 +223,12 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
             ...busDetails.map((bus) {
               return Card(
+                color: Colors.white,
                 elevation: 4,
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  leading: const Icon(Icons.directions_bus,
-                      color: Colors.blue),
+                  leading:
+                      const Icon(Icons.directions_bus, color: Colors.blue),
                   title: Text(bus['name']!),
                   subtitle: Text('${bus['route']} • ${bus['time']}'),
                 ),
@@ -223,22 +236,6 @@ class _HomePageState extends State<HomePage> {
             }).toList(),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ---------------- HISTORY PAGE ---------------- //
-
-class HistoryPage extends StatelessWidget {
-  const HistoryPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('History')),
-      body: const Center(
-        child: Text('History Page Content', style: TextStyle(fontSize: 24)),
       ),
     );
   }
@@ -253,12 +250,15 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),
-      body:  Center(
-        child: ElevatedButton(onPressed: (){
-          Navigator.of(context).push(MaterialPageRoute(builder:(context) => HistoryPage(),));
-        }, child: Text('history'))
-        
-    
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const HistoryTab()),
+            );
+          },
+          child: const Text('Go to History'),
+        ),
       ),
     );
   }
